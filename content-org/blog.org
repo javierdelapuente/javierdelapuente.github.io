@@ -1,0 +1,24 @@
+#+hugo_base_dir: ../
+
+* DONE My first post                                        :tag1:@category1:
+:PROPERTIES:
+:EXPORT_FILE_NAME: my-first-post
+:EXPORT_DATE: 2024-06-01
+:END:
+This is my post body =gnu.png=
+
+Svg:
+[[file:./images/org-mode-unicorn.svg][Org mode unicorn]]
+
+png:
+[[file:./images/logo.png][logo]]
+
+
+#+caption: /"DRINK ME"/
+#+attr_html: :class fancy
+#+attr_html: :target _blank
+#+attr_html: :attr by me :attrlink /g
+#+attr_html: :alt Caption not used as alt text
+#+attr_html: :width 50% :height 50%
+[[file:./images/logo.png]]
+

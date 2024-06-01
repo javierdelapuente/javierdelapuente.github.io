@@ -7,4 +7,12 @@ categories = ["category1"]
 draft = false
 +++
 
-This is my post body
+This is my post body `gnu.png`
+
+Svg:
+[Org mode unicorn](/ox-hugo/org-mode-unicorn.svg)
+
+png:
+[logo](/ox-hugo/logo.png)
+
+{{< figure src="/ox-hugo/logo.png" alt="Caption not used as alt text" caption="<span class=\"figure-number\">Figure 1: </span>_\"DRINK ME\"_" class="fancy" attr="by me" attrlink="/g" width="50%" height="50%" target="_blank" >}}

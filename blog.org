@@ -1,0 +1,8 @@
+#+hugo_base_dir: .
+
+* DONE My first post                                        :tag1:@category1:
+:PROPERTIES:
+:EXPORT_FILE_NAME: my-first-post
+:EXPORT_DATE: 2024-06-01
+:END:
+This is my post body

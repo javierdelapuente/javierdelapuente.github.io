@@ -1,9 +1,253 @@
 #+hugo_base_dir: ../
 
+* TODO DNI Electrónico en Ubuntu 24.04                               :ubuntu:
+:PROPERTIES:
+:EXPORT_FILE_NAME: dnielectronico-ubuntu
+:EXPORT_DATE: 2024-06-02
+:EXPORT_LANGUAGE: es
+:END:
+
+El Dni electrónico esta diseñado para funcionar tanto en Windows, GNU/Linux y como en MacOS.
+
+Probablemente la distribución de Linux más famosa es Ubuntu. La última versión de esta distribución
+es la 24.04. Esta distribución es amigable y funciona perfectamente, además de tener una fuerte apuesta
+por la seguridad. Por desgracia, esta apuesta por la seguridad en su sistema de paquetes snap a veces
+genera alguna dificultad. Este es el caso del DNI electrónico.
+
+
+
+
+https://www.dnielectronico.es/PortalDNIe/ -> "Área de Descargas" -> "GNU/Linux y MacOS" -> "Software para las distribuciones Linux" ->
+https://www.dnielectronico.es/descargas/distribuciones_linux/libpkcs11-dnie_1.6.8_amd64.deb
+
+Pone q para Ubuntu 21.
+
+Instala con sudo2
+
+sudo dpkg --install libpkcs11-dnie_1.6.8_amd64.deb
+
+sudo apt install --fix-broken
+
+Tanfo Firefox como Chromium funcionan con snap, lo que bla bla no puedes anadir como controlador /usr/lib/libpkcs11-dnie.so.
+
+
+sudo apt install -y pcscd pcsc-tools
+sudo apt install libnss3-tools
+
+cd "${HOME}"
+mkdir -p ~/.pki/nssdb
+certutil -d ~/.pki/nssdb -N --empty-password
+certutil -d "sql:${HOME}/.pki/nssdb" -L
+
+chmod 700 ~/.pki/nssdb
+modutil -add "DNIe" -dbdir "sql:${HOME}/.pki/nssdb" -libfile /usr/lib/libpkcs11-dnie.so -force
+
+modutil -list -dbdir  "sql:${HOME}/.pki/nssdb"
+
+https://www.google.com/intl/es_es/chrome/ descarga el .deb de 64 bits.
+Instala con algo como:
+sudo dpkg --install google-chrome-stable_current_amd64.deb
+
+
+-- Autofirma
+sudo apt install default-jre
+https://firmaelectronica.gob.es/Home/Descargas.html
+(descargar ultima version Debian para Linux).
+unzip AutoFirma_Linux_Debian.zip
+sudo dpkg --install AutoFirma_1_8_2.deb
+
+-- Firefox
+busca defulat profile en ~/snap/firefox/common/.mozilla/firefox/profiles.ini.
+Es algo como: ./snap/firefox/common/.mozilla/firefox/c81c22m8.default/
+
+certutil -d   "sql:${HOME}/snap/firefox/common/.mozilla/firefox/c81c22m8.default"  -L
+modutil -list -dbdir "sql:${HOME}/snap/firefox/common/.mozilla/firefox/c81c22m8.default"
+modutil -add "DNIeRemote" -dbdir "sql:${HOME}/snap/firefox/common/.mozilla/firefox/c81c22m8.default"  -libfile /usr/local/lib/libdnieremotepkcs11.so
+/usr/local/lib/libdnieremotepkcs11.so
+
+Referencias:
+https://bandaancha.eu/foros/dnie-debian-ubuntu-mint-chromium-chrome-1747958
+https://www.vidaxp.com/tecnologia/como-configurar-dnie-ubuntu-chrome-firefox/
+
+* TODO Replace Your Home Router with a "Neutral" Linux Box  :iptables:ubuntu:
+:PROPERTIES:
+:EXPORT_FILE_NAME: replace-your-router
+:EXPORT_DATE: 2023-01-21
+:EXPORT_LANGUAGE: en
+:END:
+
+** Introduction
+
+The links in this post are in Spanish as I live in Spain. In case you
+live elsewhere you should look for similar resources.
+
+There are many places where you can find information of how to change
+your service provider router with a generic one. See for example
+[[https://www.xataka.com/basics/que-router-neutro-sirve][Xataka]], [[https://www.redeszone.net/tutoriales/configuracion-routers/sustituir-sercomm-h500-s-vodafone-router-neutro/][redeszone]] or many posts in [[https://bandaancha.eu/foros/configuracion-router-neutro-edgerouter-x-1736936][bandaancha]].
+
+In this post I will describe how I have configured it with a Linux
+machine, using a Debian-based distribution. It should be
+straightforward to use it with Raspberry Pi. I do not use a fixed
+telephone phone, so I will not write about VoIP in this post.
+
+Orange is my internet provider. It uses the VLAN 832 to send
+traffic. Be careful as if it was a Telefonica's line (NEBA) the VLAN
+id would be different. [[https://www.testdevelocidad.es/configuraciones/configurar-las-vlan-router-neutro-funcionar-fibra-optica-ftth/][testdevelocidad]] has a list of VLAN for
+several internet providers that you can use.
+
+
+** Hardware
+
+You will preferently use an ONT. As an alternative, some routers can
+be configured in ONT mode, so they act as a ONT. I have an old Nokia
+G-010G-P, that a previous provider left at my home.
+
+[[/images/ONT_G-010G-P.jpg]]
+
+I will also use a cheap and simple managed switch, TP-Link
+TL-SG105E. The reason is that I want to have ethernet ports and also
+that I only have an ethernet port in the computer I am going to use as
+a router. 
+
+
+[[/images/tl_sg105e.jpg]]
+
+And finally the computer I will be using is one minipc with just one
+ethernet port running Debian Buster. The ONT ethernet port is connected
+to the port 1 in the switch, the minipc to the port 2 and the rest
+of the ports are for the LAN devices. In my case it is a Mercusys
+Halo H50G that I use as an AP and that works quite well.
+
+** Information You Will Have to Get
+
+You need to get the PLOAM password and the WLAN MAC address
+information from the router administration web page.  I have a Orange
+Livebox 6 router, so if you have another one the instructions will be
+a bit different.  You can find the PLOAM password it in the menu
+"Información y Diagnóstico" - "parámetros del sistema" - "FIBRA" -
+"contraseña de ONT". You may also need the router WLAN mac
+address. You can find it in the menu "Información y Diagnóstico" -
+"parámetros del sistema" - "general" - "direccion MAC". It is also on
+the sticker in the back of the router.
+
+In the pc you use as a router, you need to know the name of the
+network device. You can find the available ones with the command
+~ip link~. As a result you will get a network name like ~eth0~ or ~enp2s0~. I
+will use ~eth0~ from now on, you will have to replace it with your
+own.
+
+** Configuring the ONT
+
+How the ONT works is described in the [[https://fccid.io/ANATEL/03080-16-08076/Manual-do-Produto/F30E7DF7-7334-4F5D-9FAF-FC6FB21184B1/PDFhttps://fccid.io/ANATEL/03080-16-08076/Manual-do-Produto/F30E7DF7-7334-4F5D-9FAF-FC6FB21184B1/PDF][ONT Product Guide]]. Some network providers
+change the default IP/user/password, see for example [[https://bandaancha.eu/foros/ont-nokia-g-010g-pl-usuario-contrasena-1736886#r1lb01][this post]].
+
+So to connect to the ONT, add an IP to your computer in the same
+subnetwork as the ONT, with the command ~ip addr add dev 192.168.100.2/24 eth0~
+and then access the ONT on the http://192.168.100.1 with credentials admin/1234.
+You should update the ONT ID field with your PLOAM password.
+
+** Configuring the Switch
+
+The TP-Link TL-SG105E is a cheap managed switch. Although very simple
+it fits perfectly this job. You can configure it with the Easy Smart
+Configuration Utility or accessing the web interface.
+
+The ONT is connected to port 1 and the computer acting as a router to
+port 2.  You will use 802.1Q VLAN (port tagging), setting as untagged
+the ports 1 to 5 and as tagged in VLAN ID 832 the ports 1 and 2. The
+internet traffic comming from the ONT is tagged with 832 and there is
+network segment with this VLAN ID between the ONT and and router. All
+the devices attached to the switch can also communicate over all the
+ports using untagged traffic.
+
+So the final configuration should look something like this:
+
+| VLAN ID | VLAN Name    | Member Ports | Tagged Ports | Untagged Ports |
+|---------+--------------+--------------+--------------+----------------|
+|       1 | Default_VLAN |          1-5 |              |            1-5 |
+|     832 | orange       |          1-2 |          1-2 |                |
+
+** Configuring the Linux Box
+
+*** Network Configuration
+
+The first step is to allow ip forwarding. You have to
+uncomment or create the line ~net.ipv4.ip_forward=1~ in
+the file ~/etc/sysctl.conf~. Reload the configuration with
+~sysctl -p~. Also install bridge-utils if not installed yet
+with ~apt install bridge-utils~.
+
+You may need to use the same MAC address as the original router of your internet provider.
+You got it in previously, and I suppose it is 00:00:00:00:00:00, replace this with your
+real one. Then you have to create a file named ~/etc/network/interfaces.d/vlans~ with the next
+information:
+
+#+BEGIN_SRC
+allow-hotplug eth0
+iface eth0 inet manual
+    hwaddress ether 00:00:00:00:00
+
+auto br0
+iface br0 inet static
+    address 192.168.1.1
+    netmask 255.255.255.0
+    bridge_ports eth0
+
+auto eth0.832
+iface eth0.832 inet dhcp
+  vlan-raw-device enp2s0
+  # this looks like an issue in mi eth card
+  pre-up sleep 20
+#+END_SRC
+
+Restart the networking service or the full system to get everything
+working.  If everything is done correctly, you should have an IP given
+by your internet provider.
+
+*** iptables
+
+To add iptables rules use the next command:
+#+BEGIN_SRC
+iptables -t nat -A POSTROUTING -o eth0.832 -j MASQUERADE
+#+END_SRC
+
+And to make them persistent install iptables-persistent (~apt install
+iptables-persistent~) and save the rules. If you ever change the rules
+you can execute ~dpkg-reconfigure iptables-persistent~ or
+~iptables-save >/etc/iptables/rules.v4~ to update them.
+
+
+*** DHCP
+
+The last part of the configuration is to install dnsmasq. You can do
+it with ~apt-get install dnsmasq~.
+
+Then /etc/dnsmask.conf to have have something like the next lines:
+#+BEGIN_SRC
+bind-interfaces
+expand-hosts
+domain=yourdomain.com
+dhcp-authoritative
+dhcp-option=1,255.255.255.0
+dhcp-option=3,192.168.1.1
+dhcp-option=6,192.168.1.1
+dhcp-range=192.168.1.50,192.168.1.150,12h
+#+END_SRC
+    
+** Next Steps
+
+I did not configure the router as an access point as I am using an
+external one. You can have a look at how to configure hostapd in
+guides like [[https://raspberrypi-guide.github.io/networking/create-wireless-access-point][raspberry-guide]] or [[https://hawksites.newpaltz.edu/myerse/2018/06/08/hostapd-on-raspberry-pi/comment-page-1/][hawksites]].
+
+
+
+
 * DONE My first post                                        :tag1:@category1:
 :PROPERTIES:
 :EXPORT_FILE_NAME: my-first-post
 :EXPORT_DATE: 2024-06-01
+:EXPORT_LANGUAGE: en
 :END:
 This is my post body =gnu.png=
 

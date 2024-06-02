@@ -1,6 +1,10 @@
-baseURL: https://example.org/
+baseURL: https://www.delapuente.es/
 languageCode: en-us
 title: My New Hugo Site
+
+services:
+  disqus:
+    shortname: www-delapuente-es-1
 
 module:
   imports:
@@ -10,3 +14,6 @@ markup:
   goldmark:
     renderer:
       unsafe: true
+
+params:
+  comments: true

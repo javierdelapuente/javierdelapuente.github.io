@@ -1,6 +1,6 @@
 baseURL: https://www.delapuente.es/
 languageCode: en-us
-title: My New Hugo Site
+title: My Site
 
 services:
   disqus:

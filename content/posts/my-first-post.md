@@ -4,7 +4,7 @@ author = ["Javier de la Puente"]
 date = 2024-06-01
 tags = ["tag1"]
 categories = ["category1"]
-draft = false
+draft = true
 +++
 
 This is my post body `gnu.png`

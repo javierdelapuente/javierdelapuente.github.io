@@ -3,7 +3,7 @@ title = "DNI Electrónico en Ubuntu 24.04"
 author = ["Javier de la Puente"]
 date = 2024-06-02
 tags = ["ubuntu"]
-draft = true
+draft = false
 +++
 
 El Dni electrónico esta diseñado para funcionar tanto en Windows, GNU/Linux y como en MacOS.

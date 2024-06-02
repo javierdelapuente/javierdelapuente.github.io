@@ -1,5 +1,5 @@
 #+hugo_base_dir: ../
-* TODO DNI Electrónico en Ubuntu 24.04                               :ubuntu:
+* DONE DNI Electrónico en Ubuntu 24.04                               :ubuntu:
 :PROPERTIES:
 :EXPORT_FILE_NAME: dnielectronico-ubuntu
 :EXPORT_DATE: 2024-06-02
